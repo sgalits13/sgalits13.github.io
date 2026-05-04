@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>The Weather This Week</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #f8bbbb;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .container {
+        display: flex;
+        overflow-x: auto;
+        gap: 16px;
+        padding: 20px;
+      }
+
+      .card {
+        min-width: 150px;
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+
+      .card h3 {
+        margin: 0 0 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>The Weather This Week</h1>
+    <div class="container" id="weatherContainer"></div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(success, error);
+        } else {
+          alert("Geolocation not supported");
+        }
+      });
+
+      function success(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto`;
+
+        fetch(url)
+          .then((res) => res.json())
+          .then((data) => displayWeather(data));
+      }
+
+      function error() {
+        alert("Unable to retrieve location");
+      }
+
+      function displayWeather(data) {
+        const container = document.getElementById("weatherContainer");
+
+        const days = data.daily.time;
+        const maxTemps = data.daily.temperature_2m_max;
+        const minTemps = data.daily.temperature_2m_min;
+        const sunrise = data.daily.sunrise;
+        const sunset = data.daily.sunset;
+
+        for (let i = 0; i < 7; i++) {
+          const card = document.createElement("div");
+          card.className = "card";
+
+          card.innerHTML = `
+      <h3>${days[i]}</h3>
+      <p>High: ${maxTemps[i]}°C</p>
+      <p>Low: ${minTemps[i]}°C</p>
+      <p>Sunrise: ${new Date(sunrise[i]).toLocaleTimeString()}</p>
+      <p>Sunset: ${new Date(sunset[i]).toLocaleTimeString()}</p>
+    `;
+
+          container.appendChild(card);
+        }
+      }
+    </script>
+  </body>
+</html>
